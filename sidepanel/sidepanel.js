@@ -1,3 +1,29 @@
+// Quick Navigation tools (from Artistly)
+const quickNavTools = [
+  'AI Art Illustrator',
+  'AI Portrait',
+  'AI Stylizer',
+  'AI Upscaler',
+  'Aspect Ratio Calculator',
+  'Character Creator',
+  'Character Sheet',
+  'Colorify Pages',
+  'Custom Upscaler',
+  'Human Stylizer',
+  'Merch Magic',
+  'Mockup Creator',
+  'Pet Stylizer',
+  'Photo Editor',
+  'Photo Restoration',
+  'Photo to Coloring Page',
+  'Pinterest Pin Creator',
+  'Product Holding',
+  'Product Photos',
+  'Sketch to 3D Render',
+  'Storybook Illustrator',
+  'Text Editor'
+];
+
 // All available styles
 const availableStyles = [
   '2d Flat',
@@ -105,10 +131,13 @@ const currentImageDisplay = document.getElementById('current-image');
 const progressText = document.getElementById('progress-text');
 const progressBar = document.getElementById('progress-bar');
 const errorMessage = document.getElementById('error-message');
+const quickNavInput = document.getElementById('quick-nav-input');
+const quickNavDropdown = document.getElementById('quick-nav-dropdown');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
+  initializeQuickNav();
   initializeStyleDropdown();
   checkCurrentTab();
 });
@@ -145,6 +174,9 @@ function setupEventListeners() {
     if (!e.target.closest('.style-dropdown-container')) {
       styleDropdownList.classList.remove('visible');
     }
+    if (!e.target.closest('.quick-nav-wrapper')) {
+      quickNavDropdown.classList.remove('visible');
+    }
   });
 
   // Start button
@@ -169,6 +201,86 @@ function switchToTool(toolName) {
   if (toolName === 'ai-illustrator') {
     switchToView('ai-illustrator');
   }
+}
+
+function initializeQuickNav() {
+  quickNavInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim().toLowerCase();
+    if (query.length === 0) {
+      renderQuickNavResults(quickNavTools);
+    } else {
+      const filtered = quickNavTools.filter(name =>
+        name.toLowerCase().includes(query)
+      );
+      renderQuickNavResults(filtered);
+    }
+    quickNavDropdown.classList.add('visible');
+  });
+
+  quickNavInput.addEventListener('focus', () => {
+    const query = quickNavInput.value.trim().toLowerCase();
+    if (query.length === 0) {
+      renderQuickNavResults(quickNavTools);
+    } else {
+      const filtered = quickNavTools.filter(name =>
+        name.toLowerCase().includes(query)
+      );
+      renderQuickNavResults(filtered);
+    }
+    quickNavDropdown.classList.add('visible');
+  });
+
+  quickNavInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      quickNavDropdown.classList.remove('visible');
+      quickNavInput.blur();
+    }
+  });
+}
+
+function renderQuickNavResults(tools) {
+  quickNavDropdown.innerHTML = '';
+  if (tools.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'quick-nav-item quick-nav-empty';
+    empty.textContent = 'No matching tools';
+    quickNavDropdown.appendChild(empty);
+    return;
+  }
+  tools.forEach(toolName => {
+    const item = document.createElement('div');
+    item.className = 'quick-nav-item';
+    item.innerHTML = `
+      <span class="quick-nav-item-text">${escapeHtml(toolName)}</span>
+      <span class="quick-nav-badge">Artistly</span>
+    `;
+    item.addEventListener('click', () => {
+      selectQuickNavItem(toolName);
+    });
+    quickNavDropdown.appendChild(item);
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function selectQuickNavItem(toolName) {
+  quickNavInput.value = '';
+  quickNavDropdown.classList.remove('visible');
+  quickNavDropdown.innerHTML = '';
+
+  chrome.storage.local.set({ quickNavToolToClick: toolName }, () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.update(tabs[0].id, {
+          url: 'https://app.artistly.ai/ai/ai-design-assistants'
+        });
+      }
+    });
+  });
 }
 
 function initializeStyleDropdown() {
