@@ -409,4 +409,162 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Quick Navigation: click tool on ai-design-assistants or kids-puzzles page
+const quickNavPaths = ['ai-design-assistants', 'kids-puzzles'];
+const onQuickNavPage = quickNavPaths.some(p => window.location.pathname.includes(p));
+if (onQuickNavPage) {
+  console.log('[Automation Toolbox] Quick Nav page detected:', window.location.pathname, 'readyState:', document.readyState, 'body:', !!document.body);
+  chrome.storage.local.get('quickNavToolToClick', (data) => {
+    if (data.quickNavToolToClick) {
+      const toolName = data.quickNavToolToClick;
+      console.log('[Automation Toolbox] Quick Nav tool to click:', toolName);
+      chrome.storage.local.remove('quickNavToolToClick');
+      waitAndClickToolByName(toolName);
+    } else {
+      console.log('[Automation Toolbox] No quickNavToolToClick in storage');
+    }
+  });
+}
+
+function normalizeText(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/\s+/g, ' ').trim();
+}
+
+function findDivContainingText(text) {
+  const normalizedSearch = normalizeText(text);
+  if (!document.body) {
+    console.log('[Automation Toolbox] findDivContainingText: document.body is null');
+    return null;
+  }
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_ELEMENT,
+    null,
+    false
+  );
+  let node;
+  let divCount = 0;
+  const divsWithExactText = [];
+  while ((node = walker.nextNode())) {
+    if (node.tagName !== 'DIV') continue;
+    divCount++;
+    const nodeText = normalizeText(node.textContent);
+    if (nodeText === normalizedSearch) {
+      divsWithExactText.push(node);
+    }
+  }
+  console.log('[Automation Toolbox] findDivContainingText: checked', divCount, 'divs, exact matches:', divsWithExactText.length, 'for', JSON.stringify(normalizedSearch));
+  if (divsWithExactText.length > 0) {
+    const insideButton = divsWithExactText.filter(d => d.closest('button'));
+    const pool = insideButton.length > 0 ? insideButton : divsWithExactText;
+    const innermost = pool.find(d => !pool.some(other => other !== d && other.contains(d)));
+    const chosen = innermost || pool[0];
+    console.log('[Automation Toolbox] findDivContainingText: using', insideButton.length > 0 ? 'div inside button' : 'div', ', innermost of', pool.length);
+    return chosen;
+  }
+  const divsContainingText = [];
+  walker.currentNode = document.body;
+  while ((node = walker.nextNode())) {
+    if (node.tagName !== 'DIV') continue;
+    const nodeText = normalizeText(node.textContent);
+    if (nodeText.includes(normalizedSearch) || normalizedSearch.includes(nodeText)) {
+      divsContainingText.push(node);
+    }
+  }
+  if (divsContainingText.length > 0) {
+    console.log('[Automation Toolbox] findDivContainingText: found', divsContainingText.length, 'div(s) containing text');
+  }
+  return divsContainingText[0] || null;
+}
+
+function findElementByExactText(text) {
+  const normalizedSearch = normalizeText(text);
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_ELEMENT,
+    null,
+    false
+  );
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.textContent && normalizeText(node.textContent) === normalizedSearch) {
+      return node;
+    }
+  }
+  return null;
+}
+
+function clickElement(el) {
+  if (!el) {
+    console.log('[Automation Toolbox] clickElement: no element');
+    return;
+  }
+  console.log('[Automation Toolbox] clickElement: clicking', el.tagName, el.className || '(no class)', 'text:', el.textContent?.slice(0, 50));
+  el.scrollIntoView({ behavior: 'instant', block: 'center' });
+  const rect = el.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const common = { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y };
+  el.focus?.();
+  el.dispatchEvent(new PointerEvent('pointerdown', { ...common, pointerType: 'mouse' }));
+  el.dispatchEvent(new PointerEvent('pointerup', { ...common, pointerType: 'mouse' }));
+  el.dispatchEvent(new MouseEvent('mousedown', common));
+  el.dispatchEvent(new MouseEvent('mouseup', common));
+  el.dispatchEvent(new MouseEvent('click', common));
+  if (el.click) el.click();
+}
+
+function waitAndClickToolByName(toolName) {
+  const maxAttempts = 150;
+  let attempts = 0;
+  console.log('[Automation Toolbox] waitAndClickToolByName: starting for', JSON.stringify(toolName), 'readyState:', document.readyState, 'body children:', document.body?.childElementCount ?? 'no body');
+
+  function tryClick() {
+    attempts++;
+    if (!document.body) {
+      console.log('[Automation Toolbox] tryClick attempt', attempts, ': document.body is null');
+      if (attempts < maxAttempts) setTimeout(tryClick, 200);
+      return;
+    }
+    const bodyChildren = document.body.childElementCount;
+    let div = findDivContainingText(toolName);
+    if (!div) {
+      const el = findElementByExactText(toolName);
+      if (el) {
+        div = el.tagName === 'DIV' ? el : el.closest('div');
+        console.log('[Automation Toolbox] tryClick attempt', attempts, ': found via findElementByExactText, div:', !!div);
+      }
+    } else {
+      console.log('[Automation Toolbox] tryClick attempt', attempts, ': found div via findDivContainingText');
+    }
+    if (div) {
+      const button = div.closest('button') || div.closest('[role="button"]');
+      const target = button || div;
+      console.log('[Automation Toolbox] tryClick: target found,', button ? 'clicking button/role=button ancestor' : 'clicking div', ', scheduling click in 600ms');
+      setTimeout(() => clickElement(target), 600);
+      return;
+    }
+    if (attempts <= 3 || attempts % 25 === 0) {
+      console.log('[Automation Toolbox] tryClick attempt', attempts, ': no match yet, body children:', bodyChildren);
+    }
+    if (attempts < maxAttempts) {
+      setTimeout(tryClick, 200);
+    } else {
+      console.log('[Automation Toolbox] tryClick: gave up after', maxAttempts, 'attempts');
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    console.log('[Automation Toolbox] DOM already complete, starting tryClick');
+    tryClick();
+  } else {
+    console.log('[Automation Toolbox] Waiting for load event, readyState:', document.readyState);
+    window.addEventListener('load', () => {
+      console.log('[Automation Toolbox] Load event fired, starting tryClick');
+      tryClick();
+    });
+  }
+}
+
 } // End of window.artislyAutomationLoaded check

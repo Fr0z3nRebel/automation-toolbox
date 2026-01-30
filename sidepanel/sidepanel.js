@@ -1,5 +1,5 @@
-// Quick Navigation tools (from Artistly)
-const quickNavTools = [
+// Quick Navigation: design-assistants tools (navigate to ai-design-assistants)
+const designAssistantTools = [
   'AI Art Illustrator',
   'AI Portrait',
   'AI Stylizer',
@@ -23,6 +23,27 @@ const quickNavTools = [
   'Storybook Illustrator',
   'Text Editor'
 ];
+
+// Quick Navigation: kids-puzzles tools (navigate to kids-puzzles)
+const kidsPuzzleTools = [
+  'Activity Book Builder',
+  'Bi-Lingual Word to Image Matching',
+  'Complete the Word',
+  'Counting Numbers',
+  'Crossword Puzzle',
+  'Logic Puzzle (For Adults)',
+  'Maze Generator',
+  'Shadow Matching',
+  'Spot the Correct Spelling',
+  'Spot the Difference',
+  'Sudoku Puzzle',
+  'Word Search Puzzle'
+];
+
+// Combined list for Quick Nav display (alphabetized)
+const quickNavTools = [...designAssistantTools, ...kidsPuzzleTools].sort((a, b) =>
+  a.localeCompare(b, undefined, { sensitivity: 'base' })
+);
 
 // All available styles
 const availableStyles = [
@@ -267,17 +288,23 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function getQuickNavUrlForTool(toolName) {
+  if (kidsPuzzleTools.includes(toolName)) {
+    return 'https://app.artistly.ai/ai/kids-puzzles';
+  }
+  return 'https://app.artistly.ai/ai/ai-design-assistants';
+}
+
 function selectQuickNavItem(toolName) {
   quickNavInput.value = '';
   quickNavDropdown.classList.remove('visible');
   quickNavDropdown.innerHTML = '';
 
+  const url = getQuickNavUrlForTool(toolName);
   chrome.storage.local.set({ quickNavToolToClick: toolName }, () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
-        chrome.tabs.update(tabs[0].id, {
-          url: 'https://app.artistly.ai/ai/ai-design-assistants'
-        });
+        chrome.tabs.update(tabs[0].id, { url });
       }
     });
   });

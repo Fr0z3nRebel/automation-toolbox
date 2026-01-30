@@ -23,6 +23,83 @@ body {
   display: block;
 }
 
+/* Quick Navigation - uses .section and .section-label for consistency */
+.quick-nav-section {
+  margin-bottom: 25px;
+}
+
+.quick-nav-wrapper {
+  position: relative;
+}
+
+.quick-nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1001;
+  display: none;
+  margin-top: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.quick-nav-dropdown.visible {
+  display: block;
+}
+
+.quick-nav-item {
+  padding: 12px 20px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #333;
+}
+
+.quick-nav-item:last-child {
+  border-bottom: none;
+}
+
+.quick-nav-item:hover {
+  background-color: #333;
+}
+
+.quick-nav-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.quick-nav-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  background-color: #0088FF;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.quick-nav-item.quick-nav-empty {
+  cursor: default;
+  color: #888;
+}
+
+.quick-nav-item.quick-nav-empty:hover {
+  background-color: #2a2a2a;
+}
+
 .header {
   margin-bottom: 30px;
   padding-bottom: 15px;
