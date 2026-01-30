@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automation Toolbox</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Tool Selection View -->
+  <div id="tool-selection-view" class="view active">
+    <div class="header">
+      <h1>Automation Toolbox</h1>
+    </div>
+    <div class="tool-sections">
+      <!-- Artistly Section -->
+      <div class="tool-section">
+        <h2 class="section-title">Artistly</h2>
+        <div class="tool-list">
+          <button class="tool-button" data-tool="ai-illustrator">
+            <span class="tool-icon">🎨</span>
+            <span class="tool-name">AI Art Illustrator</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Art Illustrator Tool View -->
+  <div id="ai-illustrator-view" class="view">
+    <div class="header">
+      <button class="back-button" id="back-button">← Back</button>
+      <h2>AI Art Illustrator</h2>
+    </div>
+    
+    <div class="tool-content">
+      <!-- Style Selection -->
+      <div class="section">
+        <label class="section-label">Select Style</label>
+        <div class="style-dropdown-container">
+          <div class="style-dropdown">
+            <input 
+              type="text" 
+              id="style-search" 
+              class="style-search-input" 
+              placeholder="Search or select a style..."
+              autocomplete="off"
+            />
+            <div class="style-dropdown-list" id="style-dropdown-list"></div>
+          </div>
+        </div>
+        <div class="selected-style" id="selected-style">No style selected</div>
+      </div>
+
+      <!-- Prompts Input -->
+      <div class="section">
+        <label class="section-label" for="prompts-input">Enter Prompts (separated by blank lines)</label>
+        <textarea 
+          id="prompts-input" 
+          class="prompts-textarea" 
+          placeholder="Enter your first prompt here&#10;&#10;Enter your second prompt here&#10;&#10;Enter your third prompt here..."
+          rows="8"
+        ></textarea>
+      </div>
+
+      <!-- Control Buttons -->
+      <div class="section">
+        <button class="control-button start-button" id="start-button">
+          <span class="button-icon">▶</span>
+          Start
+        </button>
+        <button class="control-button stop-button" id="stop-button" disabled>
+          <span class="button-icon">⏸</span>
+          Stop
+        </button>
+      </div>
+
+      <!-- Stats Display -->
+      <div class="stats-container" id="stats-container" style="display: none;">
+        <div class="stats-card">
+          <div class="stats-header">Total Images</div>
+          <div class="stats-value" id="total-images">0</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-header">Current Image</div>
+          <div class="stats-value" id="current-image">0</div>
+        </div>
+        <div class="progress-container">
+          <div class="progress-circle" id="progress-circle">
+            <svg class="progress-svg" viewBox="0 0 100 100">
+              <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+              <circle class="progress-bar" cx="50" cy="50" r="45" id="progress-bar"></circle>
+            </svg>
+            <div class="progress-text" id="progress-text">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Display -->
+      <div class="error-message" id="error-message" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
