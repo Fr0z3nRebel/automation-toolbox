@@ -1,6 +1,19 @@
+// Quick Navigation: nav-only (just navigate, no click on page)
+const navOnlyTools = [
+  { name: 'Advanced AI Image Designer', url: 'https://editor.artistly.ai/', badge: 'Artistly' },
+  { name: 'AI Art Illustrator', url: 'https://app.artistly.ai/ai/ai-illustrator', badge: 'Artistly' },
+  { name: 'AI Bulk Actions', url: 'https://app.artistly.ai/ai/ai-workflow', badge: 'Artistly' },
+  { name: 'Community Designs', url: 'https://app.artistly.ai/community-designs', badge: 'Artistly' },
+  { name: 'Evergreen Cash Cows', url: 'https://kdpnichefinder.com/app/category/evergreen', badge: 'KDP Niche Finder' },
+  { name: 'Fresh Money', url: 'https://kdpnichefinder.com/app/category/fresh_money', badge: 'KDP Niche Finder' },
+  { name: 'Hidden Gems', url: 'https://kdpnichefinder.com/app/category/hidden_gems', badge: 'KDP Niche Finder' },
+  { name: 'High-Ticket Heavyweights', url: 'https://kdpnichefinder.com/app/category/high_ticket', badge: 'KDP Niche Finder' },
+  { name: 'My Flipbooks', url: 'https://app.artistly.ai/flipbook', badge: 'Artistly' },
+  { name: 'Personal Designs', url: 'https://app.artistly.ai/personal-designs', badge: 'Artistly' }
+];
+
 // Quick Navigation: design-assistants tools (navigate to ai-design-assistants)
 const designAssistantTools = [
-  'AI Art Illustrator',
   'AI Portrait',
   'AI Stylizer',
   'AI Upscaler',
@@ -40,10 +53,86 @@ const kidsPuzzleTools = [
   'Word Search Puzzle'
 ];
 
-// Combined list for Quick Nav display (alphabetized)
-const quickNavTools = [...designAssistantTools, ...kidsPuzzleTools].sort((a, b) =>
-  a.localeCompare(b, undefined, { sensitivity: 'base' })
-);
+// Quick Navigation: storybook studio tools (navigate to ai-storybook-studio)
+const storybookStudioTools = [
+  'Coloring Books',
+  'Idea To Illustrated Book',
+  'Idea To Storybook',
+  'Personalized Alphabet Book',
+  'Script To Storybook V2'
+];
+
+// Quick Navigation: design agents tools (navigate to ai-design-agents)
+const designAgentTools = [
+  'Ad Creator',
+  'Book Cover',
+  'Clip Art',
+  'Coloring Book (Advance)',
+  'Coloring Page',
+  'Consistent Character Storybook',
+  'Cookbook Creator',
+  'Joke Book for Kids',
+  'Kids Story Books',
+  'Music Storyboard',
+  'Multi-Character Storybook',
+  'Personalized Story Books',
+  'Pet Portraits',
+  'Script To Storybook',
+  'Soulmate Sketch',
+  'T-shirt Designs',
+  'Wall Art Sketch',
+  'Youtube Thumbnails'
+];
+
+// Quick Navigation: image designer v6 tools (navigate to image-designer-v6)
+const imageDesignerV6Tools = [
+  'Animal',
+  'Artistic Designer',
+  'Artistic Designer V2',
+  'Cards & Invites',
+  'Create From Prompt',
+  'Logo',
+  'Perfect Text in Image Designer',
+  'Poster Maker',
+  'Photorealism',
+  'Seamless Patterns',
+  'Seamless Patterns V2',
+  'Social Media Posts',
+  'Sticker',
+  'T-Shirt Designs',
+  'v4 Image Designer'
+];
+
+// Quick Navigation: consistent characters tools (navigate to consistent-characters)
+const consistentCharactersTools = [
+  '3d & 2d Style Images',
+  'Multi-consistent Characters',
+  'Realistic Images'
+];
+
+// Combined list for Quick Nav display (alphabetized A–Z)
+const quickNavTools = [
+  ...designAssistantTools,
+  ...kidsPuzzleTools,
+  ...storybookStudioTools,
+  ...designAgentTools,
+  ...imageDesignerV6Tools,
+  ...consistentCharactersTools,
+  ...navOnlyTools.map(t => t.name)
+].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+function getBadgeForTool(toolName) {
+  const navOnly = navOnlyTools.find(t => t.name === toolName);
+  return navOnly ? (navOnly.badge || 'Artistly') : 'Artistly';
+}
+
+function quickNavMatchesQuery(toolName, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const nameMatch = toolName.toLowerCase().includes(q);
+  const badgeMatch = getBadgeForTool(toolName).toLowerCase().includes(q);
+  return nameMatch || badgeMatch;
+}
 
 // All available styles
 const availableStyles = [
@@ -226,26 +315,22 @@ function switchToTool(toolName) {
 
 function initializeQuickNav() {
   quickNavInput.addEventListener('input', (e) => {
-    const query = e.target.value.trim().toLowerCase();
+    const query = e.target.value.trim();
     if (query.length === 0) {
       renderQuickNavResults(quickNavTools);
     } else {
-      const filtered = quickNavTools.filter(name =>
-        name.toLowerCase().includes(query)
-      );
+      const filtered = quickNavTools.filter(name => quickNavMatchesQuery(name, query));
       renderQuickNavResults(filtered);
     }
     quickNavDropdown.classList.add('visible');
   });
 
   quickNavInput.addEventListener('focus', () => {
-    const query = quickNavInput.value.trim().toLowerCase();
+    const query = quickNavInput.value.trim();
     if (query.length === 0) {
       renderQuickNavResults(quickNavTools);
     } else {
-      const filtered = quickNavTools.filter(name =>
-        name.toLowerCase().includes(query)
-      );
+      const filtered = quickNavTools.filter(name => quickNavMatchesQuery(name, query));
       renderQuickNavResults(filtered);
     }
     quickNavDropdown.classList.add('visible');
@@ -271,9 +356,20 @@ function renderQuickNavResults(tools) {
   tools.forEach(toolName => {
     const item = document.createElement('div');
     item.className = 'quick-nav-item';
+    const navOnly = navOnlyTools.find(t => t.name === toolName);
+    const badgeLabel = navOnly ? (navOnly.badge || 'Artistly') : 'Artistly';
+    const showV6Badge = toolName === 'Seamless Patterns' || toolName === 'T-Shirt Designs';
+    let badgesHtml;
+    if (showV6Badge) {
+      badgesHtml = `<span class="quick-nav-badges"><span class="quick-nav-badge quick-nav-badge-v6">V6</span><span class="quick-nav-badge">Artistly</span></span>`;
+    } else if (badgeLabel === 'KDP Niche Finder') {
+      badgesHtml = `<span class="quick-nav-badge quick-nav-badge-kdp">KDP Niche Finder</span>`;
+    } else {
+      badgesHtml = `<span class="quick-nav-badge">Artistly</span>`;
+    }
     item.innerHTML = `
       <span class="quick-nav-item-text">${escapeHtml(toolName)}</span>
-      <span class="quick-nav-badge">Artistly</span>
+      ${badgesHtml}
     `;
     item.addEventListener('click', () => {
       selectQuickNavItem(toolName);
@@ -289,10 +385,28 @@ function escapeHtml(text) {
 }
 
 function getQuickNavUrlForTool(toolName) {
+  const navOnly = navOnlyTools.find(t => t.name === toolName);
+  if (navOnly) return navOnly.url;
   if (kidsPuzzleTools.includes(toolName)) {
     return 'https://app.artistly.ai/ai/kids-puzzles';
   }
+  if (designAgentTools.includes(toolName)) {
+    return 'https://app.artistly.ai/ai/ai-design-agents';
+  }
+  if (storybookStudioTools.includes(toolName)) {
+    return 'https://app.artistly.ai/ai/ai-storybook-studio';
+  }
+  if (imageDesignerV6Tools.includes(toolName)) {
+    return 'https://app.artistly.ai/ai/image-designer-v6';
+  }
+  if (consistentCharactersTools.includes(toolName)) {
+    return 'https://app.artistly.ai/ai/consistent-characters';
+  }
   return 'https://app.artistly.ai/ai/ai-design-assistants';
+}
+
+function isNavOnlyTool(toolName) {
+  return navOnlyTools.some(t => t.name === toolName);
 }
 
 function selectQuickNavItem(toolName) {
@@ -301,13 +415,17 @@ function selectQuickNavItem(toolName) {
   quickNavDropdown.innerHTML = '';
 
   const url = getQuickNavUrlForTool(toolName);
-  chrome.storage.local.set({ quickNavToolToClick: toolName }, () => {
+  if (isNavOnlyTool(toolName)) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.update(tabs[0].id, { url });
-      }
+      if (tabs[0]) chrome.tabs.update(tabs[0].id, { url });
     });
-  });
+  } else {
+    chrome.storage.local.set({ quickNavToolToClick: toolName }, () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) chrome.tabs.update(tabs[0].id, { url });
+      });
+    });
+  }
 }
 
 function initializeStyleDropdown() {

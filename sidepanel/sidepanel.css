@@ -79,6 +79,13 @@ body {
   min-width: 0;
 }
 
+.quick-nav-badges {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .quick-nav-badge {
   flex-shrink: 0;
   font-size: 10px;
@@ -89,6 +96,14 @@ body {
   background-color: #0088FF;
   padding: 3px 8px;
   border-radius: 4px;
+}
+
+.quick-nav-badge-v6 {
+  background-color: #7c3aed;
+}
+
+.quick-nav-badge-kdp {
+  background-color: #059669;
 }
 
 .quick-nav-item.quick-nav-empty {

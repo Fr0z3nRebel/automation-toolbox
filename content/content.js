@@ -409,8 +409,8 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Quick Navigation: click tool on ai-design-assistants or kids-puzzles page
-const quickNavPaths = ['ai-design-assistants', 'kids-puzzles'];
+// Quick Navigation: click tool on ai-design-assistants, kids-puzzles, ai-storybook-studio, ai-design-agents, image-designer-v6, or consistent-characters page
+const quickNavPaths = ['ai-design-assistants', 'kids-puzzles', 'ai-storybook-studio', 'ai-design-agents', 'image-designer-v6', 'consistent-characters'];
 const onQuickNavPage = quickNavPaths.some(p => window.location.pathname.includes(p));
 if (onQuickNavPage) {
   console.log('[Automation Toolbox] Quick Nav page detected:', window.location.pathname, 'readyState:', document.readyState, 'body:', !!document.body);
@@ -540,8 +540,9 @@ function waitAndClickToolByName(toolName) {
     }
     if (div) {
       const button = div.closest('button') || div.closest('[role="button"]');
-      const target = button || div;
-      console.log('[Automation Toolbox] tryClick: target found,', button ? 'clicking button/role=button ancestor' : 'clicking div', ', scheduling click in 600ms');
+      const link = div.closest('a');
+      const target = button || link || div;
+      console.log('[Automation Toolbox] tryClick: target found,', button ? 'clicking button/role=button' : link ? 'clicking link (a)' : 'clicking div', ', scheduling click in 600ms');
       setTimeout(() => clickElement(target), 600);
       return;
     }
