@@ -29,6 +29,17 @@
     </div>
 
     <div class="tool-sections">
+      <!-- General Section -->
+      <div class="tool-section">
+        <h2 class="section-title">General</h2>
+        <div class="tool-list">
+          <button class="tool-button" data-tool="clipboard">
+            <span class="tool-icon">📋</span>
+            <span class="tool-name">Clipboard</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Artistly Section -->
       <div class="tool-section">
         <h2 class="section-title">Artistly</h2>
@@ -39,6 +50,38 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Clipboard Tool View -->
+  <div id="clipboard-view" class="view">
+    <div class="header">
+      <button class="back-button" id="clipboard-back-button">← Back</button>
+      <h2>Clipboard</h2>
+    </div>
+    <div class="tool-content">
+      <div class="section">
+        <label class="section-label" for="clipboard-input">Enter text (use blank lines to separate sentences/paragraphs)</label>
+        <textarea
+          id="clipboard-input"
+          class="prompts-textarea clipboard-textarea"
+          placeholder="First sentence or paragraph&#10;&#10;Second sentence or paragraph&#10;&#10;Third sentence or paragraph..."
+          rows="8"
+        ></textarea>
+      </div>
+      <div class="section">
+        <div class="clipboard-actions-row">
+          <button class="control-button start-button" id="clipboard-split-button">
+            <span class="button-icon">✂</span>
+            Split into sections
+          </button>
+          <button class="control-button clipboard-clear-button" id="clipboard-clear-button">
+            <span class="button-icon">⌫</span>
+            Clear
+          </button>
+        </div>
+      </div>
+      <div id="clipboard-sections" class="clipboard-sections"></div>
     </div>
   </div>
 

@@ -227,8 +227,14 @@ let currentPromptIndex = 0;
 // DOM elements
 const toolSelectionView = document.getElementById('tool-selection-view');
 const aiIllustratorView = document.getElementById('ai-illustrator-view');
+const clipboardView = document.getElementById('clipboard-view');
 const backButton = document.getElementById('back-button');
+const clipboardBackButton = document.getElementById('clipboard-back-button');
 const toolButtons = document.querySelectorAll('.tool-button');
+const clipboardInput = document.getElementById('clipboard-input');
+const clipboardSplitButton = document.getElementById('clipboard-split-button');
+const clipboardClearButton = document.getElementById('clipboard-clear-button');
+const clipboardSections = document.getElementById('clipboard-sections');
 const styleSearchInput = document.getElementById('style-search');
 const styleDropdownList = document.getElementById('style-dropdown-list');
 const selectedStyleDisplay = document.getElementById('selected-style');
@@ -261,9 +267,23 @@ function setupEventListeners() {
     });
   });
 
-  // Back button
+  // Back buttons
   backButton.addEventListener('click', () => {
     switchToView('tool-selection');
+  });
+  clipboardBackButton.addEventListener('click', () => {
+    switchToView('tool-selection');
+  });
+
+  // Clipboard: split into sections
+  clipboardSplitButton.addEventListener('click', () => {
+    splitClipboardAndRender();
+  });
+
+  // Clipboard: clear text and sections
+  clipboardClearButton.addEventListener('click', () => {
+    clipboardInput.value = '';
+    clipboardSections.innerHTML = '';
   });
 
   // Style search input
@@ -305,12 +325,65 @@ function switchToView(viewName) {
   
   toolSelectionView.classList.toggle('active', viewName === 'tool-selection');
   aiIllustratorView.classList.toggle('active', viewName === 'ai-illustrator');
+  clipboardView.classList.toggle('active', viewName === 'clipboard');
 }
 
 function switchToTool(toolName) {
   if (toolName === 'ai-illustrator') {
     switchToView('ai-illustrator');
+  } else if (toolName === 'clipboard') {
+    switchToView('clipboard');
   }
+}
+
+function splitClipboardAndRender() {
+  const text = clipboardInput.value.trim();
+  if (!text) {
+    clipboardSections.innerHTML = '';
+    return;
+  }
+  const sections = text
+    .split(/\n\s*\n/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  clipboardSections.innerHTML = '';
+  sections.forEach((sectionText) => {
+    const card = document.createElement('div');
+    card.className = 'clipboard-section-card';
+    const textArea = document.createElement('textarea');
+    textArea.className = 'clipboard-section-input';
+    textArea.value = sectionText;
+    textArea.rows = 3;
+    const actions = document.createElement('div');
+    actions.className = 'clipboard-section-actions';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'clipboard-copy-button';
+    copyBtn.type = 'button';
+    copyBtn.innerHTML = '<span class="button-icon">📋</span> Copy';
+    copyBtn.addEventListener('click', () => {
+      const value = textArea.value.trim();
+      navigator.clipboard.writeText(value).then(() => {
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.innerHTML = '<span class="button-icon">📋</span> Copy';
+          copyBtn.classList.remove('copied');
+        }, 1500);
+      });
+    });
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'clipboard-delete-button';
+    deleteBtn.type = 'button';
+    deleteBtn.innerHTML = '<span class="button-icon">🗑</span> Delete';
+    deleteBtn.addEventListener('click', () => {
+      card.remove();
+    });
+    actions.appendChild(copyBtn);
+    actions.appendChild(deleteBtn);
+    card.appendChild(textArea);
+    card.appendChild(actions);
+    clipboardSections.appendChild(card);
+  });
 }
 
 function initializeQuickNav() {

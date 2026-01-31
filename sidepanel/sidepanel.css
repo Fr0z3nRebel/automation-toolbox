@@ -457,3 +457,108 @@ body {
   font-size: 14px;
   margin-top: 15px;
 }
+
+/* Clipboard tool */
+.clipboard-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.clipboard-actions-row .control-button {
+  flex: 1;
+}
+
+.clipboard-clear-button {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #333;
+}
+
+.clipboard-clear-button:hover {
+  background-color: #333;
+  border-color: #666;
+}
+
+.clipboard-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clipboard-section-card {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clipboard-section-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.clipboard-section-input:focus {
+  outline: none;
+  border-color: #0088FF;
+}
+
+.clipboard-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clipboard-copy-button,
+.clipboard-delete-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.clipboard-copy-button {
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.clipboard-copy-button:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.clipboard-copy-button.copied {
+  background-color: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.clipboard-delete-button {
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.clipboard-delete-button:hover {
+  background-color: #4a1515;
+  border-color: #b91c1c;
+  color: #fca5a5;
+}
