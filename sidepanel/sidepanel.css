@@ -11,16 +11,48 @@ body {
   width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .view {
   display: none;
   padding: 20px;
-  min-height: 100vh;
+  flex: 1;
 }
 
 .view.active {
   display: block;
+}
+
+.sidepanel-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid #333;
+  background-color: #1a1a1a;
+}
+
+.buymeacoffee-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ffdd00 0%, #ffaa00 100%);
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.buymeacoffee-button:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
 }
 
 /* Quick Navigation - uses .section and .section-label for consistency */
