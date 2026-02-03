@@ -594,3 +594,473 @@ body {
   border-color: #b91c1c;
   color: #fca5a5;
 }
+
+/* Snippets */
+.snippets-form-section {
+  display: none;
+  margin-bottom: 16px;
+}
+
+.snippets-form-section.snippets-form-visible {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.snippets-form-section .section-label {
+  margin-bottom: 0;
+}
+
+#snippets-view.snippets-form-open #snippets-new-button {
+  display: none;
+}
+
+.snippets-search-section {
+  margin-bottom: 20px;
+}
+
+.snippets-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.snippets-search-row .style-search-input {
+  flex: 1;
+  min-width: 0;
+}
+
+#snippets-new-button {
+  flex-shrink: 0;
+  height: 43px;
+  padding: 0 14px;
+  font-size: 12px;
+  width: auto;
+  box-sizing: border-box;
+}
+
+.snippets-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snippets-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.snippets-form-actions #snippets-save-button,
+.snippets-form-actions #snippets-close-button {
+  box-sizing: border-box;
+  height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 40px;
+}
+
+.snippets-form-actions #snippets-save-button {
+  min-width: 110px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.snippets-form-actions #snippets-close-button {
+  min-width: 72px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.snippets-category-select {
+  width: 100%;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.snippets-category-select:focus {
+  outline: none;
+  border-color: #0088FF;
+}
+
+.snippets-content-input {
+  min-height: 80px;
+}
+
+.snippets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snippet-card {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snippet-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.snippet-expand-toggle {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.snippet-expand-toggle:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.snippet-expand-toggle .button-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.snippet-copy-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.snippet-copy-icon:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.snippet-copy-icon.copied {
+  background-color: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.snippet-card-title {
+  font-size: 14px;
+  font-weight: normal;
+  color: #ffffff;
+  flex: 1;
+  min-width: 0;
+}
+
+.snippet-category-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.snippet-category-note {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.snippet-category-prompt {
+  background-color: #7c3aed;
+  color: #ffffff;
+}
+
+.snippet-category-code {
+  background-color: #0088FF;
+  color: #ffffff;
+}
+
+.snippet-category-other {
+  background-color: #6b7280;
+  color: #ffffff;
+}
+
+.snippet-card-content-wrap {
+  overflow: hidden;
+}
+
+.snippet-card-content-wrap.collapsed {
+  display: none;
+}
+
+.snippet-card-content {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.snippet-card-content:focus {
+  outline: none;
+  border-color: #0088FF;
+}
+
+.snippet-card-content.readonly {
+  resize: none;
+  cursor: default;
+}
+
+.snippet-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.snippet-card .snippet-card-actions {
+  display: none;
+}
+
+.snippet-card.snippet-card-expanded .snippet-card-actions {
+  display: flex;
+}
+
+.snippet-card .snippet-edit-button,
+.snippet-card .snippet-delete-button {
+  display: none;
+}
+
+.snippet-card.snippet-card-expanded .snippet-edit-button,
+.snippet-card.snippet-card-expanded .snippet-delete-button {
+  display: flex;
+}
+
+.snippet-edit-button,
+.snippet-delete-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.snippet-edit-button:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.snippet-delete-button:hover {
+  background-color: #4a1515;
+  border-color: #b91c1c;
+  color: #fca5a5;
+}
+
+.snippets-empty,
+.snippets-no-match {
+  padding: 12px;
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Etsy Search Suggester */
+.search-suggester-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-suggester-input-row .style-search-input {
+  width: 100%;
+}
+
+.search-suggester-input-row .control-button {
+  width: 100%;
+}
+
+.search-suggester-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-suggester-keyword-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-suggester-keyword-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #e0e0e0;
+}
+
+.search-suggester-keyword-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.search-suggester-clip-button {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-suggester-clip-button:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.search-suggester-saved-item {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.search-suggester-saved-item .search-suggester-keyword-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-suggester-remove-button {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #888;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.search-suggester-remove-button:hover {
+  background-color: #4a1515;
+  border-color: #b91c1c;
+  color: #fca5a5;
+}
+
+.search-suggester-empty {
+  padding: 12px;
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.search-suggester-loading {
+  padding: 16px;
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+}
+
+.search-suggester-status-info {
+  background-color: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #444;
+}
+
+.search-suggester-suggestions-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-suggester-suggestions-header .section-label {
+  margin-bottom: 0;
+}
+
+.search-suggester-copy-csv-button {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.search-suggester-copy-csv-button:hover {
+  background-color: #333;
+  border-color: #0088FF;
+}
+
+.search-suggester-debug {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #888;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  word-break: break-all;
+}

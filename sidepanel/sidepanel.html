@@ -37,6 +37,10 @@
             <span class="tool-icon">📋</span>
             <span class="tool-name">Clipboard</span>
           </button>
+          <button class="tool-button" data-tool="snippets">
+            <span class="tool-icon">📝</span>
+            <span class="tool-name">Snippets</span>
+          </button>
         </div>
       </div>
 
@@ -47,6 +51,17 @@
           <button class="tool-button" data-tool="ai-illustrator">
             <span class="tool-icon">🎨</span>
             <span class="tool-name">AI Art Illustrator</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Etsy Section -->
+      <div class="tool-section">
+        <h2 class="section-title">Etsy</h2>
+        <div class="tool-list">
+          <button class="tool-button" data-tool="search-suggester">
+            <span class="tool-icon">🔍</span>
+            <span class="tool-name">Search Suggester</span>
           </button>
         </div>
       </div>
@@ -82,6 +97,116 @@
         </div>
       </div>
       <div id="clipboard-sections" class="clipboard-sections"></div>
+    </div>
+  </div>
+
+  <!-- Snippets Tool View -->
+  <div id="snippets-view" class="view">
+    <div class="header">
+      <button class="back-button" id="snippets-back-button">← Back</button>
+      <h2>Snippets</h2>
+    </div>
+    <div class="tool-content">
+      <div class="section snippets-search-section">
+        <label class="section-label" for="snippets-search-input">Search</label>
+        <div class="snippets-search-row">
+          <input
+            type="text"
+            id="snippets-search-input"
+            class="style-search-input"
+            placeholder="Search snippets..."
+            autocomplete="off"
+          />
+          <button type="button" class="control-button start-button snippets-new-btn" id="snippets-new-button">
+            <span class="button-icon">➕</span>
+            New
+          </button>
+        </div>
+      </div>
+      <div class="section snippets-form-section" id="snippets-form-section">
+        <label class="section-label">New snippet</label>
+        <div class="snippets-form">
+          <input
+            type="text"
+            id="snippets-title-input"
+            class="style-search-input"
+            placeholder="Title"
+            autocomplete="off"
+          />
+          <select id="snippets-category-select" class="snippets-category-select">
+            <option value="Note">Note</option>
+            <option value="Prompt">Prompt</option>
+            <option value="Code">Code</option>
+            <option value="Other">Other</option>
+          </select>
+          <textarea
+            id="snippets-content-input"
+            class="prompts-textarea snippets-content-input"
+            placeholder="Content..."
+            rows="4"
+          ></textarea>
+          <div class="snippets-form-actions">
+            <button type="button" class="control-button start-button" id="snippets-save-button">
+              <span class="button-icon">💾</span>
+              Save
+            </button>
+            <button type="button" class="control-button clipboard-clear-button" id="snippets-close-button">
+              <span class="button-icon">✕</span>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <label class="section-label">Your snippets</label>
+        <div id="snippets-list" class="snippets-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Etsy Search Suggester Tool View -->
+  <div id="search-suggester-view" class="view">
+    <div class="header">
+      <button class="back-button" id="search-suggester-back-button">← Back</button>
+      <h2>Search Suggester</h2>
+    </div>
+    <div class="tool-content">
+      <div class="section">
+        <label class="section-label" for="search-suggester-input">Search keyword</label>
+        <div class="search-suggester-input-row">
+          <input
+            type="text"
+            id="search-suggester-input"
+            class="style-search-input"
+            placeholder="e.g. watercolor clipart"
+            autocomplete="off"
+          />
+          <button type="button" class="control-button start-button" id="search-suggester-fetch-button">
+            <span class="button-icon">🔍</span>
+            Get suggestions
+          </button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="search-suggester-actions-row">
+          <button type="button" class="control-button clipboard-clear-button" id="search-suggester-reset-button">
+            <span class="button-icon">↺</span>
+            Reset saved
+          </button>
+        </div>
+      </div>
+      <div class="section" id="search-suggester-saved-section">
+        <label class="section-label">Saved keywords</label>
+        <div id="search-suggester-saved-list" class="search-suggester-keyword-list"></div>
+      </div>
+      <div class="section" id="search-suggester-results-section">
+        <div class="search-suggester-suggestions-header">
+          <label class="section-label">Suggestions</label>
+          <button type="button" class="search-suggester-copy-csv-button" id="search-suggester-copy-csv-button" title="Copy as CSV">📋</button>
+        </div>
+        <div id="search-suggester-results-list" class="search-suggester-keyword-list"></div>
+        <div id="search-suggester-error" class="error-message" style="display: none;"></div>
+      </div>
     </div>
   </div>
 

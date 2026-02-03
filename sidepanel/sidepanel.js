@@ -228,8 +228,10 @@ let currentPromptIndex = 0;
 const toolSelectionView = document.getElementById('tool-selection-view');
 const aiIllustratorView = document.getElementById('ai-illustrator-view');
 const clipboardView = document.getElementById('clipboard-view');
+const searchSuggesterView = document.getElementById('search-suggester-view');
 const backButton = document.getElementById('back-button');
 const clipboardBackButton = document.getElementById('clipboard-back-button');
+const searchSuggesterBackButton = document.getElementById('search-suggester-back-button');
 const toolButtons = document.querySelectorAll('.tool-button');
 const clipboardInput = document.getElementById('clipboard-input');
 const clipboardSplitButton = document.getElementById('clipboard-split-button');
@@ -249,6 +251,35 @@ const progressBar = document.getElementById('progress-bar');
 const errorMessage = document.getElementById('error-message');
 const quickNavInput = document.getElementById('quick-nav-input');
 const quickNavDropdown = document.getElementById('quick-nav-dropdown');
+const searchSuggesterInput = document.getElementById('search-suggester-input');
+const searchSuggesterFetchButton = document.getElementById('search-suggester-fetch-button');
+const searchSuggesterResetButton = document.getElementById('search-suggester-reset-button');
+const searchSuggesterSavedList = document.getElementById('search-suggester-saved-list');
+const searchSuggesterResultsList = document.getElementById('search-suggester-results-list');
+const searchSuggesterCopyCsvButton = document.getElementById('search-suggester-copy-csv-button');
+const searchSuggesterError = document.getElementById('search-suggester-error');
+const snippetsView = document.getElementById('snippets-view');
+const snippetsBackButton = document.getElementById('snippets-back-button');
+const snippetsSearchInput = document.getElementById('snippets-search-input');
+const snippetsTitleInput = document.getElementById('snippets-title-input');
+const snippetsCategorySelect = document.getElementById('snippets-category-select');
+const snippetsContentInput = document.getElementById('snippets-content-input');
+const snippetsSaveButton = document.getElementById('snippets-save-button');
+const snippetsList = document.getElementById('snippets-list');
+const snippetsNewButton = document.getElementById('snippets-new-button');
+const snippetsFormSection = document.getElementById('snippets-form-section');
+const snippetsCloseButton = document.getElementById('snippets-close-button');
+
+// Snippets: categories and storage key
+const SNIPPET_CATEGORIES = ['Note', 'Prompt', 'Code', 'Other'];
+const SNIPPETS_STORAGE_KEY = 'snippets';
+
+// Listen for Etsy suggestions result (pushed from background)
+chrome.runtime.onMessage.addListener((message) => {
+  if (message && message.type === 'etsy-suggestions-result') {
+    applyEtsySuggestionsResult(message);
+  }
+});
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -273,6 +304,57 @@ function setupEventListeners() {
   });
   clipboardBackButton.addEventListener('click', () => {
     switchToView('tool-selection');
+  });
+  searchSuggesterBackButton.addEventListener('click', () => {
+    switchToView('tool-selection');
+  });
+  snippetsBackButton.addEventListener('click', () => {
+    switchToView('tool-selection');
+  });
+
+  // Snippets: search filter
+  snippetsSearchInput.addEventListener('input', () => {
+    if (typeof renderSnippets === 'function' && snippetsData) renderSnippets(snippetsData);
+  });
+
+  // Snippets: show new snippet form
+  snippetsNewButton.addEventListener('click', () => {
+    if (snippetsFormSection) {
+      snippetsFormSection.classList.add('snippets-form-visible');
+      if (snippetsView) snippetsView.classList.add('snippets-form-open');
+      if (snippetsTitleInput) snippetsTitleInput.focus();
+    }
+  });
+
+  // Snippets: save new snippet
+  snippetsSaveButton.addEventListener('click', () => {
+    addSnippetFromForm();
+  });
+
+  // Snippets: close new snippet form
+  snippetsCloseButton.addEventListener('click', () => {
+    if (snippetsFormSection) snippetsFormSection.classList.remove('snippets-form-visible');
+    if (snippetsView) snippetsView.classList.remove('snippets-form-open');
+    if (snippetsTitleInput) snippetsTitleInput.value = '';
+    if (snippetsContentInput) snippetsContentInput.value = '';
+    if (snippetsCategorySelect) snippetsCategorySelect.value = 'Note';
+  });
+
+  // Search Suggester: fetch suggestions
+  searchSuggesterFetchButton.addEventListener('click', () => {
+    fetchEtsySuggestions();
+  });
+  searchSuggesterResetButton.addEventListener('click', () => {
+    resetSearchSuggester();
+  });
+
+  searchSuggesterCopyCsvButton.addEventListener('click', () => {
+    if (!currentSuggestionKeywords.length) return;
+    const csv = currentSuggestionKeywords.join(',');
+    navigator.clipboard.writeText(csv).then(() => {
+      searchSuggesterCopyCsvButton.textContent = '✓';
+      setTimeout(() => { searchSuggesterCopyCsvButton.textContent = '📋'; }, 1500);
+    });
   });
 
   // Clipboard: split into sections
@@ -326,6 +408,8 @@ function switchToView(viewName) {
   toolSelectionView.classList.toggle('active', viewName === 'tool-selection');
   aiIllustratorView.classList.toggle('active', viewName === 'ai-illustrator');
   clipboardView.classList.toggle('active', viewName === 'clipboard');
+  snippetsView.classList.toggle('active', viewName === 'snippets');
+  searchSuggesterView.classList.toggle('active', viewName === 'search-suggester');
 }
 
 function switchToTool(toolName) {
@@ -333,7 +417,354 @@ function switchToTool(toolName) {
     switchToView('ai-illustrator');
   } else if (toolName === 'clipboard') {
     switchToView('clipboard');
+  } else if (toolName === 'snippets') {
+    switchToView('snippets');
+    loadAndRenderSnippets();
+  } else if (toolName === 'search-suggester') {
+    switchToView('search-suggester');
+    renderSearchSuggesterSaved();
   }
+}
+
+// Snippets state (in-memory copy; persisted in chrome.storage.local)
+let snippetsData = [];
+
+function loadSnippets(callback) {
+  chrome.storage.local.get(SNIPPETS_STORAGE_KEY, (result) => {
+    const list = Array.isArray(result[SNIPPETS_STORAGE_KEY]) ? result[SNIPPETS_STORAGE_KEY] : [];
+    callback(list);
+  });
+}
+
+function saveSnippets(snippets) {
+  chrome.storage.local.set({ [SNIPPETS_STORAGE_KEY]: snippets }, () => {
+    snippetsData = snippets.slice();
+    renderSnippets(snippetsData);
+  });
+}
+
+function loadAndRenderSnippets() {
+  loadSnippets((list) => {
+    snippetsData = list.slice();
+    renderSnippets(snippetsData);
+  });
+}
+
+function snippetMatchesQuery(snippet, query) {
+  if (!query || !query.trim()) return true;
+  const q = query.trim().toLowerCase();
+  const title = (snippet.title || '').toLowerCase();
+  const category = (snippet.category || '').toLowerCase();
+  const content = (snippet.content || '').toLowerCase();
+  return title.includes(q) || category.includes(q) || content.includes(q);
+}
+
+function getSnippetCategoryClass(category) {
+  const c = (category || 'Other').toLowerCase();
+  if (c === 'note') return 'snippet-category-note';
+  if (c === 'prompt') return 'snippet-category-prompt';
+  if (c === 'code') return 'snippet-category-code';
+  return 'snippet-category-other';
+}
+
+function renderSnippets(snippets) {
+  const query = snippetsSearchInput ? snippetsSearchInput.value.trim() : '';
+  const filtered = query ? snippets.filter((s) => snippetMatchesQuery(s, query)) : snippets;
+  snippetsList.innerHTML = '';
+
+  if (snippets.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'snippets-empty';
+    empty.textContent = 'No snippets yet. Add one above.';
+    snippetsList.appendChild(empty);
+    return;
+  }
+  if (filtered.length === 0) {
+    const noMatch = document.createElement('div');
+    noMatch.className = 'snippets-no-match';
+    noMatch.textContent = 'No snippets match your search.';
+    snippetsList.appendChild(noMatch);
+    return;
+  }
+
+  filtered.forEach((snippet) => {
+    const card = document.createElement('div');
+    card.className = 'snippet-card';
+    card.dataset.snippetId = snippet.id;
+
+    const header = document.createElement('div');
+    header.className = 'snippet-card-header';
+    const expandBtn = document.createElement('button');
+    expandBtn.type = 'button';
+    expandBtn.className = 'snippet-expand-toggle';
+    expandBtn.setAttribute('aria-label', 'Expand');
+    expandBtn.innerHTML = '<span class="button-icon">▶</span>';
+    expandBtn.addEventListener('click', () => {
+      const isCollapsed = contentWrap.classList.toggle('collapsed');
+      card.classList.toggle('snippet-card-expanded', !isCollapsed);
+      expandBtn.innerHTML = isCollapsed ? '<span class="button-icon">▶</span>' : '<span class="button-icon">▼</span>';
+      expandBtn.setAttribute('aria-label', isCollapsed ? 'Expand' : 'Collapse');
+    });
+    const titleEl = document.createElement('span');
+    titleEl.className = 'snippet-card-title';
+    titleEl.textContent = snippet.title || '(Untitled)';
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'snippet-copy-icon';
+    copyBtn.setAttribute('aria-label', 'Copy to clipboard');
+    copyBtn.innerHTML = '<span class="button-icon">📋</span>';
+    copyBtn.addEventListener('click', () => {
+      const text = (snippet.content || '').trim();
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerHTML = '<span class="button-icon">✓</span>';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.innerHTML = '<span class="button-icon">📋</span>';
+          copyBtn.classList.remove('copied');
+        }, 1500);
+      });
+    });
+    const badge = document.createElement('span');
+    badge.className = 'snippet-category-badge ' + getSnippetCategoryClass(snippet.category);
+    badge.textContent = snippet.category || 'Other';
+    header.appendChild(expandBtn);
+    header.appendChild(titleEl);
+    header.appendChild(copyBtn);
+    header.appendChild(badge);
+    card.appendChild(header);
+
+    const contentWrap = document.createElement('div');
+    contentWrap.className = 'snippet-card-content-wrap collapsed';
+    const contentEl = document.createElement('textarea');
+    contentEl.className = 'snippet-card-content';
+    contentEl.value = snippet.content || '';
+    contentEl.rows = 3;
+    contentEl.addEventListener('blur', () => {
+      const newContent = contentEl.value;
+      if (newContent !== (snippet.content || '')) {
+        const idx = snippetsData.findIndex((s) => s.id === snippet.id);
+        if (idx !== -1) {
+          snippetsData[idx] = { ...snippetsData[idx], content: newContent };
+          saveSnippets(snippetsData);
+        }
+      }
+    });
+    contentWrap.appendChild(contentEl);
+    card.appendChild(contentWrap);
+
+    const actions = document.createElement('div');
+    actions.className = 'snippet-card-actions';
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'snippet-edit-button';
+    editBtn.innerHTML = '<span class="button-icon">💾</span> Save';
+    editBtn.addEventListener('click', () => {
+      const newContent = contentEl.value;
+      const idx = snippetsData.findIndex((s) => s.id === snippet.id);
+      if (idx !== -1) {
+        snippetsData[idx] = { ...snippetsData[idx], content: newContent };
+        saveSnippets(snippetsData);
+      }
+    });
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'snippet-delete-button';
+    deleteBtn.innerHTML = '<span class="button-icon">🗑</span> Delete';
+    deleteBtn.addEventListener('click', () => {
+      if (confirm('Delete this snippet?')) {
+        const next = snippetsData.filter((s) => s.id !== snippet.id);
+        saveSnippets(next);
+      }
+    });
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    card.appendChild(actions);
+    snippetsList.appendChild(card);
+  });
+}
+
+function addSnippetFromForm() {
+  const title = (snippetsTitleInput && snippetsTitleInput.value || '').trim();
+  const content = (snippetsContentInput && snippetsContentInput.value || '').trim();
+  if (!title && !content) return;
+  const category = snippetsCategorySelect && snippetsCategorySelect.value ? snippetsCategorySelect.value : 'Other';
+  const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+  const newSnippet = { id, title: title || '(Untitled)', category, content };
+  const next = snippetsData.slice();
+  next.push(newSnippet);
+  snippetsData = next;
+  chrome.storage.local.set({ [SNIPPETS_STORAGE_KEY]: next }, () => {
+    if (snippetsTitleInput) snippetsTitleInput.value = '';
+    if (snippetsContentInput) snippetsContentInput.value = '';
+    if (snippetsCategorySelect) snippetsCategorySelect.value = 'Note';
+    renderSnippets(snippetsData);
+  });
+}
+
+// Etsy Search Suggester state
+let savedKeywords = [];
+let currentSuggestionKeywords = [];
+
+function stripHtmlFromQuery(str) {
+  if (typeof str !== 'string') return '';
+  const div = document.createElement('div');
+  div.innerHTML = str;
+  return (div.textContent || div.innerText || '').trim();
+}
+
+function renderSearchSuggesterSaved() {
+  searchSuggesterSavedList.innerHTML = '';
+  if (savedKeywords.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'search-suggester-empty';
+    empty.textContent = 'No saved keywords yet. Clip suggestions below.';
+    searchSuggesterSavedList.appendChild(empty);
+    return;
+  }
+  savedKeywords.forEach((keyword) => {
+    const item = document.createElement('div');
+    item.className = 'search-suggester-keyword-item search-suggester-saved-item';
+    const text = document.createElement('span');
+    text.className = 'search-suggester-keyword-text';
+    text.textContent = keyword;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'search-suggester-remove-button';
+    removeBtn.setAttribute('aria-label', 'Remove');
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => {
+      savedKeywords = savedKeywords.filter((k) => k !== keyword);
+      renderSearchSuggesterSaved();
+    });
+    item.appendChild(text);
+    item.appendChild(removeBtn);
+    searchSuggesterSavedList.appendChild(item);
+  });
+}
+
+function clipKeyword(keyword) {
+  if (!keyword || savedKeywords.includes(keyword)) return;
+  savedKeywords.push(keyword);
+  renderSearchSuggesterSaved();
+  currentSuggestionKeywords = currentSuggestionKeywords.filter((k) => k !== keyword);
+  const items = searchSuggesterResultsList.querySelectorAll('.search-suggester-keyword-item');
+  items.forEach((el) => {
+    if (el.querySelector('.search-suggester-keyword-text')?.textContent === keyword) el.remove();
+  });
+}
+
+function resetSearchSuggester() {
+  savedKeywords = [];
+  renderSearchSuggesterSaved();
+  searchSuggesterResultsList.innerHTML = '';
+  searchSuggesterError.style.display = 'none';
+}
+
+// Pending Etsy request id and timeout (for matching push response)
+let pendingEtsyRequestId = null;
+let searchSuggesterTimeoutId = null;
+
+function showSearchSuggesterStatus(text, isError) {
+  searchSuggesterError.textContent = text;
+  searchSuggesterError.style.display = 'block';
+  searchSuggesterError.classList.toggle('search-suggester-status-info', !isError);
+  if (isError) searchSuggesterError.classList.remove('search-suggester-status-info');
+}
+
+function applyEtsySuggestionsResult(payload) {
+  if (payload.requestId !== pendingEtsyRequestId) return;
+  pendingEtsyRequestId = null;
+  if (searchSuggesterTimeoutId) {
+    clearTimeout(searchSuggesterTimeoutId);
+    searchSuggesterTimeoutId = null;
+  }
+  searchSuggesterFetchButton.disabled = false;
+  searchSuggesterError.style.display = 'none';
+  searchSuggesterError.classList.remove('search-suggester-status-info');
+  if (!payload.ok) {
+    searchSuggesterResultsList.innerHTML = '';
+    showSearchSuggesterStatus(payload.error || 'Could not load suggestions.', true);
+    return;
+  }
+  const data = payload.data || {};
+  const debug = payload.debug || {};
+  const rawResults = data.results || [];
+  let results = rawResults
+    .filter((r) => !r.shop_suggestion_item)
+    .map((r) => stripHtmlFromQuery(r && r.query != null ? r.query : ''))
+    .filter((q) => q.length > 0);
+  results = results.filter((q) => !savedKeywords.includes(q));
+  console.log('[Search Suggester] payload:', { ok: payload.ok, debug, rawResultCount: rawResults.length, filteredCount: results.length });
+  searchSuggesterResultsList.innerHTML = '';
+  currentSuggestionKeywords = [];
+  if (results.length === 0) {
+    const statusCode = debug.statusCode != null ? debug.statusCode : '—';
+    const rawCount = debug.rawResultCount != null ? debug.rawResultCount : rawResults.length;
+    const samples = debug.rawQuerySamples || rawResults.slice(0, 3).map((r) => (r && r.query != null ? String(r.query).slice(0, 60) : ''));
+    const debugHtml = [
+      `HTTP ${statusCode}`,
+      `Raw results: ${rawCount}`,
+      `After filter: 0`,
+      rawCount > 0 ? `Sample raw queries: ${samples.join(' | ')}` : (debug.rawPreview ? `Response preview: ${String(debug.rawPreview).slice(0, 200)}…` : '')
+    ].filter(Boolean).join(' · ');
+    showSearchSuggesterStatus(`No suggestions returned. Try another keyword. Debug: ${debugHtml}`, false);
+    const debugEl = document.createElement('div');
+    debugEl.className = 'search-suggester-debug';
+    debugEl.textContent = debugHtml;
+    searchSuggesterResultsList.appendChild(debugEl);
+    return;
+  }
+  currentSuggestionKeywords = results.slice();
+  results.forEach((keyword) => {
+    const item = document.createElement('div');
+    item.className = 'search-suggester-keyword-item';
+    const text = document.createElement('span');
+    text.className = 'search-suggester-keyword-text';
+    text.textContent = keyword;
+    const clipBtn = document.createElement('button');
+    clipBtn.type = 'button';
+    clipBtn.className = 'search-suggester-clip-button';
+    clipBtn.textContent = 'Clip';
+    clipBtn.addEventListener('click', () => clipKeyword(keyword));
+    item.appendChild(text);
+    item.appendChild(clipBtn);
+    searchSuggesterResultsList.appendChild(item);
+  });
+}
+
+function fetchEtsySuggestions() {
+  const query = searchSuggesterInput.value.trim();
+  if (!query) {
+    showSearchSuggesterStatus('Enter a search keyword.', true);
+    return;
+  }
+  searchSuggesterError.style.display = 'none';
+  searchSuggesterFetchButton.disabled = true;
+  pendingEtsyRequestId = Date.now();
+  searchSuggesterResultsList.innerHTML = '<div class="search-suggester-loading">Loading suggestions…</div>';
+  const timeoutMs = 15000;
+  searchSuggesterTimeoutId = setTimeout(() => {
+    if (pendingEtsyRequestId !== null) {
+      pendingEtsyRequestId = null;
+      searchSuggesterFetchButton.disabled = false;
+      searchSuggesterResultsList.innerHTML = '';
+      showSearchSuggesterStatus('Request timed out. Try again.', true);
+    }
+  }, timeoutMs);
+  chrome.runtime.sendMessage(
+    { action: 'fetch-etsy-suggestions', query, requestId: pendingEtsyRequestId },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        clearTimeout(searchSuggesterTimeoutId);
+        searchSuggesterTimeoutId = null;
+        searchSuggesterFetchButton.disabled = false;
+        searchSuggesterResultsList.innerHTML = '';
+        showSearchSuggesterStatus(`Send failed: ${chrome.runtime.lastError.message}`, true);
+        pendingEtsyRequestId = null;
+      }
+    }
+  );
 }
 
 function splitClipboardAndRender() {
