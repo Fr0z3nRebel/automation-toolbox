@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Automation Toolbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automation tools for various platforms including Artistly",
   "permissions": [
     "sidePanel",
@@ -10,7 +10,8 @@
     "storage"
   ],
   "host_permissions": [
-    "https://app.artistly.ai/*"
+    "https://app.artistly.ai/*",
+    "https://www.etsy.com/*"
   ],
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"
@@ -22,6 +23,10 @@
     {
       "matches": ["https://app.artistly.ai/*"],
       "js": ["content/content.js"]
+    },
+    {
+      "matches": ["https://www.etsy.com/*"],
+      "js": ["content/etsy-suggestions.js"]
     }
   ],
   "action": {
