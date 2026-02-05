@@ -1028,7 +1028,7 @@ async function startAutomation() {
     currentTabId = tab.id;
 
     // Navigate to artistly.ai if not already there
-    if (!tab.url.includes('app.artistly.ai/ai/ai-illustrator')) {
+    if (!tab.url || !tab.url.includes('app.artistly.ai/ai/ai-illustrator')) {
       await chrome.tabs.update(tab.id, {
         url: 'https://app.artistly.ai/ai/ai-illustrator'
       });
