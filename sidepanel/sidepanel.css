@@ -1022,12 +1022,14 @@ body {
   border: 1px solid #444;
 }
 
+.search-suggester-saved-header,
 .search-suggester-suggestions-header {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.search-suggester-saved-header .section-label,
 .search-suggester-suggestions-header .section-label {
   margin-bottom: 0;
 }

@@ -257,6 +257,7 @@ const searchSuggesterResetButton = document.getElementById('search-suggester-res
 const searchSuggesterSavedList = document.getElementById('search-suggester-saved-list');
 const searchSuggesterResultsList = document.getElementById('search-suggester-results-list');
 const searchSuggesterCopyCsvButton = document.getElementById('search-suggester-copy-csv-button');
+const searchSuggesterCopySavedButton = document.getElementById('search-suggester-copy-saved-button');
 const searchSuggesterError = document.getElementById('search-suggester-error');
 const snippetsView = document.getElementById('snippets-view');
 const snippetsBackButton = document.getElementById('snippets-back-button');
@@ -273,11 +274,19 @@ const snippetsCloseButton = document.getElementById('snippets-close-button');
 // Snippets: categories and storage key
 const SNIPPET_CATEGORIES = ['Note', 'Prompt', 'Code', 'Other'];
 const SNIPPETS_STORAGE_KEY = 'snippets';
+const SEARCH_SUGGESTER_SAVED_KEY = 'searchSuggesterSavedKeywords';
 
 // Listen for Etsy suggestions result (pushed from background)
 chrome.runtime.onMessage.addListener((message) => {
   if (message && message.type === 'etsy-suggestions-result') {
     applyEtsySuggestionsResult(message);
+  }
+});
+
+// Reload saved keywords when updated from Etsy page (or another tab)
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes[SEARCH_SUGGESTER_SAVED_KEY]) {
+    loadSearchSuggesterSaved(renderSearchSuggesterSaved);
   }
 });
 
@@ -357,6 +366,15 @@ function setupEventListeners() {
     });
   });
 
+  searchSuggesterCopySavedButton.addEventListener('click', () => {
+    if (!savedKeywords.length) return;
+    const csv = savedKeywords.join(',');
+    navigator.clipboard.writeText(csv).then(() => {
+      searchSuggesterCopySavedButton.textContent = '✓';
+      setTimeout(() => { searchSuggesterCopySavedButton.textContent = '📋'; }, 1500);
+    });
+  });
+
   // Clipboard: split into sections
   clipboardSplitButton.addEventListener('click', () => {
     splitClipboardAndRender();
@@ -422,7 +440,7 @@ function switchToTool(toolName) {
     loadAndRenderSnippets();
   } else if (toolName === 'search-suggester') {
     switchToView('search-suggester');
-    renderSearchSuggesterSaved();
+    loadSearchSuggesterSaved(renderSearchSuggesterSaved);
   }
 }
 
@@ -606,6 +624,18 @@ function addSnippetFromForm() {
 let savedKeywords = [];
 let currentSuggestionKeywords = [];
 
+function loadSearchSuggesterSaved(callback) {
+  chrome.storage.local.get(SEARCH_SUGGESTER_SAVED_KEY, (result) => {
+    const list = Array.isArray(result[SEARCH_SUGGESTER_SAVED_KEY]) ? result[SEARCH_SUGGESTER_SAVED_KEY] : [];
+    savedKeywords = list.slice();
+    if (typeof callback === 'function') callback();
+  });
+}
+
+function saveSearchSuggesterSaved() {
+  chrome.storage.local.set({ [SEARCH_SUGGESTER_SAVED_KEY]: savedKeywords.slice() });
+}
+
 function stripHtmlFromQuery(str) {
   if (typeof str !== 'string') return '';
   const div = document.createElement('div');
@@ -635,6 +665,7 @@ function renderSearchSuggesterSaved() {
     removeBtn.textContent = '×';
     removeBtn.addEventListener('click', () => {
       savedKeywords = savedKeywords.filter((k) => k !== keyword);
+      saveSearchSuggesterSaved();
       renderSearchSuggesterSaved();
     });
     item.appendChild(text);
@@ -646,6 +677,7 @@ function renderSearchSuggesterSaved() {
 function clipKeyword(keyword) {
   if (!keyword || savedKeywords.includes(keyword)) return;
   savedKeywords.push(keyword);
+  saveSearchSuggesterSaved();
   renderSearchSuggesterSaved();
   currentSuggestionKeywords = currentSuggestionKeywords.filter((k) => k !== keyword);
   const items = searchSuggesterResultsList.querySelectorAll('.search-suggester-keyword-item');
@@ -656,6 +688,7 @@ function clipKeyword(keyword) {
 
 function resetSearchSuggester() {
   savedKeywords = [];
+  saveSearchSuggesterSaved();
   renderSearchSuggesterSaved();
   searchSuggesterResultsList.innerHTML = '';
   searchSuggesterError.style.display = 'none';
